@@ -1,4 +1,5 @@
 <?php
+    session_start();   
 //update this depending on the db setup
 $dbcon = mysqli_connect("localhost","root","","hotel") or die ("could not connect database");
 
@@ -33,6 +34,38 @@ function check($username, $password) {
     
         // If no user is found or password is incorrect, return false
         return false;
+    }
+
+    public function check_room_availability($checkin, $checkout,$roomid)
+    {
+        $con = $this->opencon();
+        $stmt = $con->prepare("SELECT * FROM booking WHERE room_id=? and check_in <= ? AND check_out >= ?");
+        $stmt->execute([$roomid, $checkin, $checkout]);
+
+        
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if($result) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function book_now($checkin, $checkout, $phone,$roomid, $persons, $userId)
+    { 
+        try
+        {
+            $con = $this->opencon();
+            $stmt = $con->prepare("INSERT INTO `booking`(`room_id`, `check_in`, `check_out`, `pax`, `phone`, `user_id`) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$roomid, $checkin, $checkout, $persons, $phone, $userId]);
+
+            return true;
+        }
+        catch(e) 
+        {
+            return false;
+        }
     }
 
 function signup($username, $password, $firstname, $lastname, $birthday, $sex){
