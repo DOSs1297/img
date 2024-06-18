@@ -1,19 +1,36 @@
-<?php
-    include_once 'admin/include/class.user.php'; 
-    $user=new User(); 
+<?php    
+    require_once('classes/database.php');
+    $con = new database();
+
     $id = $_SESSION['User_Id'];
 
     $roomname=$_GET['room_name'];
     $roomid=$_GET['room_id'];
     if(isset($_REQUEST['submit'])) 
     { 
-        extract($_REQUEST);   
-        $result=$user->booknow($checkin, $checkout, $phone, $roomid, $persons,$id);
-        if($result)
+        extract($_REQUEST);  
+
+        $isRoomFree = $con->check_room_availability($checkin, $checkout,$roomid);
+        echo $isRoomFree;
+        if($isRoomFree) 
         {
+            $isBooked = $con-> book_now($checkin, $checkout, $phone, $roomid, $persons,$id);
+            if($isBooked)
+            {
+                echo "<script type='text/javascript'>
+                        alert('Your Room has been booked!!');
+                    </script>";
+            }
+            else 
+            {
+                echo "<script type='text/javascript'>
+                        alert('Unexpected Error Happened. Please Contact Administrator');
+                    </script>";
+            }
+        } else {
             echo "<script type='text/javascript'>
-                  alert('".$result."');
-             </script>";
+                    alert('Room Is Not Available for the selected Day/Time');
+                </script>";
         }
     }
 ?>
